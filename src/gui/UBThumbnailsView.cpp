@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2015-2022 Département de l'Instruction Publique (DIP-SEM)
- *
- * Copyright (C) 2013 Open Education Foundation
- *
- * Copyright (C) 2010-2013 Groupement d'Intérêt Public pour
- * l'Education Numérique en Afrique (GIP ENA)
+ * Copyright (C) 2015-2024 Département de l'Instruction Publique (DIP-SEM)
  *
  * This file is part of OpenBoard.
  *
@@ -25,29 +20,29 @@
  */
 
 
-#ifndef UBExportCFF_H_
-#define UBExportCFF_H_
+#include "UBThumbnailsView.h"
 
-#include <QtCore>
+#include "gui/UBThumbnailArranger.h"
 
-#include "UBExportAdaptor.h"
-
-#include "frameworks/UBFileSystemUtils.h"
-
-class UBDocumentProxy;
-
-class UBExportCFF : public UBExportAdaptor
+UBThumbnailsView::UBThumbnailsView(QWidget* parent)
+    : QGraphicsView{parent}
 {
-    Q_OBJECT
+}
 
-public:
-    UBExportCFF(QObject *parent = 0);
-    virtual ~UBExportCFF();
+UBThumbnailsView::~UBThumbnailsView()
+{
+    if (mArranger)
+    {
+        delete mArranger;
+    }
+}
 
-    virtual QString exportName();
-    virtual QString exportExtention();
-    virtual void persist(std::shared_ptr<UBDocumentProxy> pDocument);
-    virtual bool associatedActionactionAvailableFor(const QModelIndex &selectedIndex);
-};
+void UBThumbnailsView::setThumbnailArranger(UBThumbnailArranger* arranger)
+{
+    mArranger = arranger;
+}
 
-#endif /* UBExportCFF_H_ */
+UBThumbnailArranger* UBThumbnailsView::thumbnailArranger() const
+{
+    return mArranger;
+}

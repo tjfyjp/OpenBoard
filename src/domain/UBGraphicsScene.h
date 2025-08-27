@@ -57,6 +57,7 @@ class UBMagnifierParams;
 class UBMagnifier;
 class UBGraphicsCache;
 class UBGraphicsGroupContainerItem;
+class UBMediaAssetItem;
 class UBSelectionFrame;
 class UBBoardView;
 
@@ -156,9 +157,6 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem, public std::en
         UBGraphicsW3CWidgetItem* addW3CWidget(const QUrl& pWidgetUrl, const QPointF& pPos = QPointF(0, 0));
         void addGraphicsWidget(UBGraphicsWidgetItem* graphicsWidget, const QPointF& pPos = QPointF(0, 0));
 
-        QPointF lastCenter();
-        void setLastCenter(QPointF center);
-
         UBGraphicsMediaItem* addMedia(const QUrl& pMediaFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
         UBGraphicsMediaItem* addVideo(const QUrl& pVideoFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
         UBGraphicsMediaItem* addAudio(const QUrl& pAudioFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
@@ -188,8 +186,6 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem, public std::en
         QGraphicsItem* scaleToFitDocumentSize(QGraphicsItem* item, bool center = false, int margin = 0, bool expand = false);
 
         QRectF normalizedSceneRect(qreal ratio = -1.0);
-
-        QGraphicsItem *itemForUuid(QUuid uuid);
 
         void moveTo(const QPointF& pPoint);
         void drawLineTo(const QPointF& pEndPoint, const qreal& pWidth, bool bLineStyle);
@@ -260,35 +256,20 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem, public std::en
             public:
                 SceneViewState()
                 {
-                    zoomFactor = 1;
-                    horizontalPosition = 0;
-                    verticalPostition = 0;
-                    mLastSceneCenter = QPointF();
                 }
 
                 SceneViewState(qreal pZoomFactor, int pHorizontalPosition, int pVerticalPostition, QPointF sceneCenter = QPointF())// 1595/1605
+                    : zoomFactor{pZoomFactor}
+                    , horizontalPosition{pHorizontalPosition}
+                    , verticalPostition{pVerticalPostition}
+                    , mLastSceneCenter{sceneCenter}
                 {
-                    zoomFactor = pZoomFactor;
-                    horizontalPosition = pHorizontalPosition;
-                    verticalPostition = pVerticalPostition;
-                    mLastSceneCenter = sceneCenter;
                 }
 
-                QPointF lastSceneCenter() // Save Scene Center to replace the view when the scene becomes active
-                {
-                    return mLastSceneCenter;
-                }
-
-                void setLastSceneCenter(QPointF center)
-                {
-                    mLastSceneCenter = center;
-                }
-
-                QPointF mLastSceneCenter;
-
-                qreal zoomFactor;
-                int horizontalPosition;
-                int verticalPostition;
+                qreal zoomFactor{1};
+                int horizontalPosition{0};
+                int verticalPostition{0};
+                QPointF mLastSceneCenter{};
         };
 
         SceneViewState viewState() const
@@ -303,8 +284,8 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem, public std::en
 
         virtual void setRenderingQuality(UBItem::RenderingQuality pRenderingQuality, UBItem::CacheBehavior cacheBehavior);
 
-        QList<QUrl> relativeDependenciesOfItem(QGraphicsItem* item) const;
-        QList<QUrl> relativeDependencies() const;
+        QList<QString> relativeDependencies() const;
+        QList<UBMediaAssetItem*> mediaAssetItems() const;
 
         QSize nominalSize();
 
@@ -346,8 +327,6 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem, public std::en
 
         void setSelectedZLevel(QGraphicsItem *item);
         void setOwnZlevel(QGraphicsItem *item);
-
-        static QUuid getPersonalUuid(QGraphicsItem *item);
 
         UBGraphicsPolygonItem* polygonToPolygonItem(const QPolygonF pPolygon);
         void clearSelectionFrame();
@@ -400,6 +379,7 @@ public slots:
         void stylusToolChanged(int tool, int previousTool);
 
         void controlViewportChanged();
+        void loadingCompleted(std::shared_ptr<void> handle);
 
 signals:
         void zoomChanged(qreal zoomFactor);

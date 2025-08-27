@@ -86,12 +86,6 @@ QVariant UBGraphicsCurtainItem::itemChange(GraphicsItemChange change, const QVar
     return QGraphicsRectItem::itemChange(change, newValue);
 }
 
-void UBGraphicsCurtainItem::setUuid(const QUuid &pUuid)
-{
-    UBItem::setUuid(pUuid);
-    setData(UBGraphicsItemData::ItemUuid, QVariant(pUuid)); //store item uuid inside the QGraphicsItem to fast operations with Items on the scene
-}
-
 void UBGraphicsCurtainItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (Delegate()->mousePressEvent(event))
@@ -169,6 +163,7 @@ void UBGraphicsCurtainItem::copyItemParameters(UBItem *copy) const
         cp->setFlag(QGraphicsItem::ItemIsMovable, true);
         cp->setFlag(QGraphicsItem::ItemIsSelectable, true);
         cp->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
+        cp->setData(UBGraphicsItemData::ItemOwnZValue, this->data(UBGraphicsItemData::ItemOwnZValue));
         cp->setZValue(this->zValue());
     }
 }

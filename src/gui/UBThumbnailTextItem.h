@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2015-2022 Département de l'Instruction Publique (DIP-SEM)
- *
- * Copyright (C) 2013 Open Education Foundation
- *
- * Copyright (C) 2010-2013 Groupement d'Intérêt Public pour
- * l'Education Numérique en Afrique (GIP ENA)
+ * Copyright (C) 2015-2025 Département de l'Instruction Publique (DIP-SEM)
  *
  * This file is part of OpenBoard.
  *
@@ -25,33 +20,29 @@
  */
 
 
+#pragma once
 
+#include <QGraphicsTextItem>
 
-#ifndef UBTHUMBNAILVIEW_H_
-#define UBTHUMBNAILVIEW_H_
-
-#include <QGraphicsView>
-#include <QLabel>
-#include <QHBoxLayout>
-#include <QDebug>
-
-class UBGraphicsScene;
-
-class UBThumbnailView : public QGraphicsView
+class UBThumbnailTextItem : public QGraphicsTextItem
 {
     Q_OBJECT
 
-    public:
+public:
+    UBThumbnailTextItem();
+    UBThumbnailTextItem(int index);
+    UBThumbnailTextItem(const QString& text);
 
-        UBThumbnailView(std::shared_ptr<UBGraphicsScene> scene, QWidget* parent =0);
-        virtual ~UBThumbnailView()
-        {
+    QRectF boundingRect() const;
 
-        }
+    void setWidth(qreal pWidth);
+    qreal width();
 
-    private:
-        QHBoxLayout* mHBoxLayout;
+    void setPageNumber(int i);
+    void setText(const QString& text);
+    void computeText();
 
+private:
+    qreal mWidth{0};
+    QString mUnelidedText{};
 };
-
-#endif /* UBTHUMBNAILVIEW_H_ */

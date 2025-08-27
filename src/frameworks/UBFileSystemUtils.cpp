@@ -31,7 +31,7 @@
 
 #include <QtGui>
 
-#include "core/UBApplication.h"
+#include "adaptors/UBPageMapper.h"
 
 #include "globals/UBGlobals.h"
 
@@ -462,6 +462,7 @@ QString UBFileSystemUtils::mimeTypeFromFileName(const QString& fileName)
     if (ext == "bmp") return "image/bmp";
     if (ext == "tiff" || ext == "tif") return "image/tiff";
     if (ext == "gif") return "image/gif";
+    if (ext == "webp") return "image/webp";
     if (ext == "svg" || ext == "svgz") return "image/svg+xml";
     if (ext == "pdf") return "application/pdf";
     if (ext == "mov" || ext == "qt") return "video/quicktime";
@@ -568,6 +569,7 @@ UBMimeType::Enum UBFileSystemUtils::mimeTypeFromString(const QString& typeString
 
     if (typeString == "image/jpeg"
         || typeString == "image/png"
+        || typeString == "image/webp"
         || typeString == "image/gif"
         || typeString == "image/tiff"
         || typeString == "image/bmp")
@@ -655,7 +657,8 @@ QString UBFileSystemUtils::getFirstExistingFileFromList(const QString& path, con
 }
 
 
-bool UBFileSystemUtils::compressDirInZip(const QDir& pDir, const QString& pDestPath, QuaZipFile *pOutZipFile, bool pRootDocumentFolder, UBProcessingProgressListener* progressListener)
+bool UBFileSystemUtils::compressDirInZip(const QDir& pDir, const QString& pDestPath, QuaZipFile *pOutZipFile,
+                                         bool pRootDocumentFolder, UBPageMapper* mapper, UBProcessingProgressListener* progressListener)
 {
     QFileInfoList files = pDir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
 
@@ -697,6 +700,16 @@ bool UBFileSystemUtils::compressDirInZip(const QDir& pDir, const QString& pDestP
                 progressListener->processing(objectType, pageFiles.indexOf(file), pageFiles.size());
             }
 
+            auto outFilename = file.fileName();
+
+            // map file
+            if (mapper)
+            {
+                auto result = mapper->map(file.fileName());
+                file = result.input;
+                outFilename = result.output;
+            }
+
             QFile inFile(file.absoluteFilePath());
             if(!inFile.open(QIODevice::ReadOnly))
             {
@@ -706,7 +719,7 @@ bool UBFileSystemUtils::compressDirInZip(const QDir& pDir, const QString& pDestP
 
             qDebug() << "will open" << pDestPath << file.fileName() << inFile.fileName();
 
-            if(!pOutZipFile->open(QIODevice::WriteOnly, QuaZipNewInfo(pDestPath + file.fileName(), inFile.fileName())))
+            if(!pOutZipFile->open(QIODevice::WriteOnly, QuaZipNewInfo(pDestPath + outFilename, inFile.fileName())))
             {
                 qWarning() << "Compression of file" << inFile.fileName() << " failed. Cause: outFile.open(): " << pOutZipFile->getZipError();
                 inFile.close();
